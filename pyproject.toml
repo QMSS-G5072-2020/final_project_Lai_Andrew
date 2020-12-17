@@ -7,6 +7,10 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+requests = "^2.25.0"
+pandas = "^1.1.5"
+numpy = "^1.19.4"
+simplejson = "^3.17.2"
 
 [tool.poetry.dev-dependencies]
 
