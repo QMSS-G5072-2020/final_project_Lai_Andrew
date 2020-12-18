@@ -21,6 +21,7 @@ or historical weather data on their requested park.
 - numpy
 - requests
 - json 
+- simplejson
 - pytest
 
 ## Usage
