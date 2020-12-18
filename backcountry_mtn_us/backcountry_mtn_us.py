@@ -30,7 +30,8 @@ def get_closest_park(lat, lng, count):
     assert (-90 <= lat <= 90), "Latitude is out of bounds"
     assert (-180 <= lng <= 180), "Longitude is out of bounds"
     assert isinstance(lng, int), "This function only works with arguments as integers."
-    assert isinstance(count, int) and count > 0, "This function only works with arguments with positive integers."
+    assert isinstance(count, int), "This function only works with arguments with integers."
+    assert (0 < count <= 5), "Count is out of bounds."
     
     try:
         params = {"lat":lat, "lng":lng, 'count':count}
@@ -71,7 +72,7 @@ def get_data(triplet, days):
     
     """
     assert isinstance(triplet, str), "Stations only work as strings"
-    assert isinstance(days, int), "This function only works with arguments as integers."
+    assert isinstance(days, int) and days >= 0, "This function only works with days as integers and >= 0."
     
     try:
         url = 'http://api.powderlin.es/station/{}'.format(triplet)
@@ -83,7 +84,7 @@ def get_data(triplet, days):
         df = pd.json_normalize(check['data'])
         return df
     except HTTPError as error:
-        print(f'This Mountain could not be found. Please check your triplet code again {error}')
+        print(f'This Mountain could not be found. Please check your triplet code again or lower amount of days. {error}')
 
         
 def get_state_park(state):
@@ -115,6 +116,7 @@ def get_state_park(state):
         r.raise_for_status()
         check = r.json()
         df = pd.json_normalize(check)
+        pd.set_option('display.max_rows', 150)
         df = df.drop(df.columns[[4]], axis=1)
         df.columns = ['Elevation', 'Name', 'Timezone', 'Triplet', 'Lat', 'Lng']
         df = df.round({'Lat': 2 ,'Lng':2})
