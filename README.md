@@ -16,7 +16,9 @@ $ pip install -i https://test.pypi.org/simple/ backcountry_mtn_us
 
 ## Dependencies
 
-- TODO
+- pandas
+- numpy
+- requests
 
 ## Usage
 
