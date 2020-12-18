@@ -20,6 +20,8 @@ or historical weather data on their requested park.
 - pandas
 - numpy
 - requests
+- json 
+- pytest
 
 ## Usage
 
