@@ -23,7 +23,7 @@ or historical data on their requested park.
 
 ## Usage
 
-- [To look at how the function is used and general information, please check out] (final_project_Lai_Andrew/Example.ipynb)
+- Please check out `./Example.ipynb` for more information about the package.
 
 ## Documentation
 
