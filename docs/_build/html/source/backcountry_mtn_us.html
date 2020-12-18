@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>backcountry_mtn_us package &#8212; backcountry_mtn_us  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="backcountry-mtn-us-package">
+<h1>backcountry_mtn_us package<a class="headerlink" href="#backcountry-mtn-us-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-backcountry_mtn_us.backcountry_mtn_us">
+<span id="backcountry-mtn-us-backcountry-mtn-us-module"></span><h2>backcountry_mtn_us.backcountry_mtn_us module<a class="headerlink" href="#module-backcountry_mtn_us.backcountry_mtn_us" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="backcountry_mtn_us.backcountry_mtn_us.get_closest_park">
+<code class="sig-prename descclassname">backcountry_mtn_us.backcountry_mtn_us.</code><code class="sig-name descname">get_closest_park</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">lng</span></em>, <em class="sig-param"><span class="n">count</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backcountry_mtn_us/backcountry_mtn_us.html#get_closest_park"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backcountry_mtn_us.backcountry_mtn_us.get_closest_park" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame of closest parks by latitude and longitude.</p>
+<p>lat : Latitude as an integer (must be within the bounds of -90 and 90)
+lng : Longitude as an integer (must be within the bounds of -180 and 180)
+count: How many parks you want returned based on your lat,lng. An integer input.</p>
+<p>A pandas DataFrame object that describes distance, elevation, latitude, longitude, park name,
+timezone, and triplet code (park id).</p>
+<p>&gt;&gt; get_closest_park(lat = 50, lng = -120, count = 3)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="backcountry_mtn_us.backcountry_mtn_us.get_data">
+<code class="sig-prename descclassname">backcountry_mtn_us.backcountry_mtn_us.</code><code class="sig-name descname">get_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">triplet</span></em>, <em class="sig-param"><span class="n">days</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backcountry_mtn_us/backcountry_mtn_us.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backcountry_mtn_us.backcountry_mtn_us.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame of detailing data of selected park .</p>
+<p>triplet : The park id code. In the format of IdNumber:StateAbbreviation:SNTL. A string.
+days : Number of days (not including today) you want to retrieve data for chosen park</p>
+<p>A pandas DataFrame object that describes date, snow water, change in snow water, snow depth,
+change in snow depth, and temperature.</p>
+<p>&gt;&gt; get_data(triplet = ‘1159:WA:SNTL’, days = 2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="backcountry_mtn_us.backcountry_mtn_us.get_data_history">
+<code class="sig-prename descclassname">backcountry_mtn_us.backcountry_mtn_us.</code><code class="sig-name descname">get_data_history</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">triplet</span></em>, <em class="sig-param"><span class="n">startdate</span></em>, <em class="sig-param"><span class="n">enddate</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backcountry_mtn_us/backcountry_mtn_us.html#get_data_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backcountry_mtn_us.backcountry_mtn_us.get_data_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame of detailing historical data of selected park .</p>
+<p>triplet : The park id code. In the format of IdNumber:StateAbbreviation:SNTL. A string.
+startdate : Time period you want to start at. YYYY-MM-DD. A string.
+enddate : Time period you want to end at. YYYY-MM-DD. A string.</p>
+<p>A pandas DataFrame object that describes date, snow water, change in snow water, snow depth,
+change in snow depth, and temperature.</p>
+<p>&gt;&gt; get_data_history(triplet = “1125:AZ:SNTL”, startdate = “2013-01-19”, enddate = “2013-01-20”)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="backcountry_mtn_us.backcountry_mtn_us.get_state_park">
+<code class="sig-prename descclassname">backcountry_mtn_us.backcountry_mtn_us.</code><code class="sig-name descname">get_state_park</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backcountry_mtn_us/backcountry_mtn_us.html#get_state_park"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backcountry_mtn_us.backcountry_mtn_us.get_state_park" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame of all parks by selected state.</p>
+<p>state : The state abbreviation/postal code. For example: California = CA. A string.</p>
+<p>A pandas DataFrame object that describes elevation, park name, timezone, triplet/park id,
+latitude, and longitude.</p>
+<p>&gt;&gt; get_state_park(state = “AZ”)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="backcountry_mtn_us.backcountry_mtn_us.get_state_stats">
+<code class="sig-prename descclassname">backcountry_mtn_us.backcountry_mtn_us.</code><code class="sig-name descname">get_state_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/backcountry_mtn_us/backcountry_mtn_us.html#get_state_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backcountry_mtn_us.backcountry_mtn_us.get_state_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame that details summary statistics for each state recorded.</p>
+<p>None</p>
+<p>A pandas DataFrame object that describes max park elevation, average park elevation , and how many parks
+are in each state.</p>
+<p>&gt;&gt; get_state_stats()</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-backcountry_mtn_us">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-backcountry_mtn_us" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">backcountry_mtn_us</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conduct.html">Code of Conduct</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Andrew Lai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/backcountry_mtn_us.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

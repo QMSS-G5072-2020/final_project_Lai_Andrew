@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>backcountry_mtn_us.backcountry_mtn_us &#8212; backcountry_mtn_us  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for backcountry_mtn_us.backcountry_mtn_us</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="n">HTTPError</span>
+
+<div class="viewcode-block" id="get_closest_park"><a class="viewcode-back" href="../../source/backcountry_mtn_us.html#backcountry_mtn_us.backcountry_mtn_us.get_closest_park">[docs]</a><span class="k">def</span> <span class="nf">get_closest_park</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lng</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a pandas DataFrame of closest parks by latitude and longitude.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    lat : Latitude as an integer (must be within the bounds of -90 and 90)</span>
+<span class="sd">    lng : Longitude as an integer (must be within the bounds of -180 and 180)</span>
+<span class="sd">    count: How many parks you want returned based on your lat,lng. An integer input.</span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    A pandas DataFrame object that describes distance, elevation, latitude, longitude, park name, </span>
+<span class="sd">    timezone, and triplet code (park id).</span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    &gt;&gt; get_closest_park(lat = 50, lng = -120, count = 3) </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot;This function only works with arguments as integers.&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span> <span class="o">&lt;=</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="mi">90</span><span class="p">),</span> <span class="s2">&quot;Latitude is out of bounds&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="o">-</span><span class="mi">180</span> <span class="o">&lt;=</span> <span class="n">lng</span> <span class="o">&lt;=</span> <span class="mi">180</span><span class="p">),</span> <span class="s2">&quot;Longitude is out of bounds&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lng</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot;This function only works with arguments as integers.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;This function only works with arguments with positive integers.&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span><span class="n">lat</span><span class="p">,</span> <span class="s2">&quot;lng&quot;</span><span class="p">:</span><span class="n">lng</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="n">count</span><span class="p">}</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://api.powderlin.es/closest_stations&quot;</span><span class="p">,</span>
+                     <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[[</span><span class="mi">7</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Distance (miles)&#39;</span><span class="p">,</span> <span class="s1">&#39;Elevation (ft)&#39;</span><span class="p">,</span> <span class="s1">&#39;Lat&#39;</span><span class="p">,</span> <span class="s1">&#39;Lng&#39;</span><span class="p">,</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Timezone&#39;</span><span class="p">,</span> <span class="s1">&#39;Triplet&#39;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">({</span><span class="s1">&#39;Distance (miles)&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Lat&#39;</span><span class="p">:</span> <span class="mi">2</span> <span class="p">,</span><span class="s1">&#39;Lng&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">df</span>
+    
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Something went wrong. Please check your connection again.</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        
+    
+
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../source/backcountry_mtn_us.html#backcountry_mtn_us.backcountry_mtn_us.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">triplet</span><span class="p">,</span> <span class="n">days</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a pandas DataFrame of detailing data of selected park .</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    triplet : The park id code. In the format of IdNumber:StateAbbreviation:SNTL. A string.</span>
+<span class="sd">    days : Number of days (not including today) you want to retrieve data for chosen park</span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    A pandas DataFrame object that describes date, snow water, change in snow water, snow depth, </span>
+<span class="sd">    change in snow depth, and temperature. </span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    &gt;&gt; get_data(triplet = &#39;1159:WA:SNTL&#39;, days = 2)</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">triplet</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Stations only work as strings&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">days</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot;This function only works with arguments as integers.&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://api.powderlin.es/station/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">triplet</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;days&#39;</span><span class="p">:</span><span class="n">days</span><span class="p">}</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">url</span><span class="p">),</span> 
+                         <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">df</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;This Mountain could not be found. Please check your triplet code again </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="get_state_park"><a class="viewcode-back" href="../../source/backcountry_mtn_us.html#backcountry_mtn_us.backcountry_mtn_us.get_state_park">[docs]</a><span class="k">def</span> <span class="nf">get_state_park</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a pandas DataFrame of all parks by selected state.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    state : The state abbreviation/postal code. For example: California = CA. A string.</span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    A pandas DataFrame object that describes elevation, park name, timezone, triplet/park id, </span>
+<span class="sd">    latitude, and longitude. </span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    &gt;&gt; get_state_park(state = &quot;AZ&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;State abbreviations only work as strings&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">+</span><span class="n">state</span><span class="o">+</span><span class="s2">&quot;:&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://api.powderlin.es/stations&quot;</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[[</span><span class="mi">4</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Elevation&#39;</span><span class="p">,</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Timezone&#39;</span><span class="p">,</span> <span class="s1">&#39;Triplet&#39;</span><span class="p">,</span> <span class="s1">&#39;Lat&#39;</span><span class="p">,</span> <span class="s1">&#39;Lng&#39;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">({</span><span class="s1">&#39;Lat&#39;</span><span class="p">:</span> <span class="mi">2</span> <span class="p">,</span><span class="s1">&#39;Lng&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
+        <span class="n">state_info</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Triplet&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">state</span><span class="p">)]</span>
+        <span class="n">state_info</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">state_info</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">state_info</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There is no data for this State.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">state_info</span>
+    
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Something went wrong. Please check your inputs again. </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="get_state_stats"><a class="viewcode-back" href="../../source/backcountry_mtn_us.html#backcountry_mtn_us.backcountry_mtn_us.get_state_stats">[docs]</a><span class="k">def</span> <span class="nf">get_state_stats</span><span class="p">():</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a pandas DataFrame that details summary statistics for each state recorded.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    None</span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    A pandas DataFrame object that describes max park elevation, average park elevation , and how many parks </span>
+<span class="sd">    are in each state. </span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    &gt;&gt; get_state_stats()</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://api.powderlin.es/stations&quot;</span><span class="p">)</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;triplet&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;([A-Z]</span><span class="si">{2}</span><span class="s1">)&#39;</span><span class="p">,</span><span class="n">expand</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">Max_Elevation</span> <span class="o">=</span><span class="p">(</span><span class="s1">&#39;elevation&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">),</span>
+        <span class="n">Avg_Elevation</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;elevation&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">),</span>
+        <span class="n">State_Park_Count</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">))</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">round</span><span class="p">({</span><span class="s1">&#39;Avg_Elevation&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">stats</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Something went wrong. Please check your connection again. </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        
+
+<div class="viewcode-block" id="get_data_history"><a class="viewcode-back" href="../../source/backcountry_mtn_us.html#backcountry_mtn_us.backcountry_mtn_us.get_data_history">[docs]</a><span class="k">def</span> <span class="nf">get_data_history</span><span class="p">(</span><span class="n">triplet</span><span class="p">,</span> <span class="n">startdate</span><span class="p">,</span> <span class="n">enddate</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a pandas DataFrame of detailing historical data of selected park .</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    triplet : The park id code. In the format of IdNumber:StateAbbreviation:SNTL. A string.</span>
+<span class="sd">    startdate : Time period you want to start at. YYYY-MM-DD. A string. </span>
+<span class="sd">    enddate : Time period you want to end at. YYYY-MM-DD. A string. </span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    A pandas DataFrame object that describes date, snow water, change in snow water, snow depth, </span>
+<span class="sd">    change in snow depth, and temperature. </span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    &gt;&gt; get_data_history(triplet = &quot;1125:AZ:SNTL&quot;, startdate = &quot;2013-01-19&quot;, enddate = &quot;2013-01-20&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">triplet</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Stations only work as strings&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">startdate</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;This function only works with arguments as strings.&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">enddate</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;This function only works with arguments as strings.&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://api.powderlin.es/station/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">triplet</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start_date&#39;</span><span class="p">:</span><span class="n">startdate</span><span class="p">,</span> <span class="s1">&#39;end_date&#39;</span><span class="p">:</span><span class="n">enddate</span><span class="p">}</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">url</span><span class="p">),</span> 
+                         <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">df</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;This Mountain could not be found. Please check your inputs again. </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">backcountry_mtn_us</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../conduct.html">Code of Conduct</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Andrew Lai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
