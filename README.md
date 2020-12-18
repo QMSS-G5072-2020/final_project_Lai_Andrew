@@ -23,7 +23,7 @@ or historical data on their requested park.
 
 ## Usage
 
-- To look at how the function is used and general information, please check out:  ./backcountry_mtn_us/Example.ipynb.
+- To look at how the function is used and general information, please check out:  ./Example.ipynb.
 
 ## Documentation
 
