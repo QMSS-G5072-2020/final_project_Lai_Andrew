@@ -12,8 +12,8 @@ $ pip install -i https://test.pypi.org/simple/ backcountry_mtn_us
 
 ## Features
 
-- This package returns information on backcountry parks in the US. Users can find parks by current location or current state. Users can also find present
-or historical data on their requested park. 
+- This package returns weather information on backcountry parks in the US. Users can find parks by current location or current state. Users can also find present
+or historical weather data on their requested park. 
 
 ## Dependencies
 
