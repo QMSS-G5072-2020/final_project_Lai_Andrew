@@ -12,7 +12,7 @@ def get_closest_park(lat, lng, count):
     ------------
     lat : Latitude as an integer (must be within the bounds of -90 and 90)
     lng : Longitude as an integer (must be within the bounds of -180 and 180)
-    count: How many parks you want returned based on your lat,lng. An integer input.
+    count: How many parks you want returned based on your lat,lng. An integer input between 0-5.
     
     Output:
     ------------
@@ -30,7 +30,7 @@ def get_closest_park(lat, lng, count):
     assert (-90 <= lat <= 90), "Latitude is out of bounds"
     assert (-180 <= lng <= 180), "Longitude is out of bounds"
     assert isinstance(lng, int), "This function only works with arguments as integers."
-    assert isinstance(count, int), "This function only works with arguments with integers."
+    assert isinstance(count, int), "This function only works with arguments with integers"
     assert (0 < count <= 5), "Count is out of bounds."
     
     try:
@@ -40,10 +40,17 @@ def get_closest_park(lat, lng, count):
         r.raise_for_status()
         check = r.json()
         df = pd.json_normalize(check)
-        df = df.drop(df.columns[[7]], axis=1)
-        df.columns = ['Distance (miles)', 'Elevation (ft)', 'Lat', 'Lng', 'Name', 'Timezone', 'Triplet']
-        df = df.round({'Distance (miles)': 2, 'Lat': 2 ,'Lng':2})
-        return df
+        df1 = df[['distance',
+                  'station_information.elevation',
+                  'station_information.location.lat', 
+                  'station_information.location.lng',
+                  'station_information.name',
+                  'station_information.timezone', 
+                  'station_information.triplet']]
+        
+        df1.columns = ['Distance (miles)', 'Elevation (ft)', 'Lat', 'Lng', 'Name', 'Timezone', 'Triplet']
+        cpark = df1.round({'Distance (miles)': 2, 'Lat': 2 ,'Lng':2})
+        return cpark
     
     except HTTPError as error:
         print(f'Something went wrong. Please check your connection again.{error}')
@@ -117,10 +124,16 @@ def get_state_park(state):
         check = r.json()
         df = pd.json_normalize(check)
         pd.set_option('display.max_rows', 150)
-        df = df.drop(df.columns[[4]], axis=1)
-        df.columns = ['Elevation', 'Name', 'Timezone', 'Triplet', 'Lat', 'Lng']
-        df = df.round({'Lat': 2 ,'Lng':2})
-        state_info = df[df['Triplet'].str.contains(state)]
+        df1 = df[['elevation',
+                  'name',
+                  'timezone', 
+                  'triplet',
+                  'location.lat',
+                  'location.lng']]
+    
+        df1.columns = ['Elevation', 'Name', 'Timezone', 'Triplet', 'Lat', 'Lng']
+        df1.round({'Lat': 2 ,'Lng':2})
+        state_info = df1[df1['Triplet'].str.contains(state)]
         state_info.index = range(len(state_info.index))
 
         if state_info.empty:
